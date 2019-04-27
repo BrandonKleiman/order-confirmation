@@ -4,12 +4,16 @@ import { catchError, map, pluck } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ConfigService } from './config-module/config.service';
 import { BoardRow, MondayResponse, Phone, Email } from './app.models';
+import { TwilioService } from './twilio/twilio.service';
+import { SendgridService } from './sendgrid/sendgrid.service';
 
 @Controller('reminders')
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private config: ConfigService,
+    private twilioService: TwilioService,
+    private sendgridService: SendgridService,
   ) {}
 
   @Get()
@@ -43,7 +47,7 @@ export class AppController {
               column.cid === 'email_address' || column.name === 'Email Address',
           ).value as Email;
           if (emailColumn && emailColumn.email) {
-            console.log(emailColumn.email);
+            this.sendgridService.sendTo(emailColumn.email);
           }
         });
       });
