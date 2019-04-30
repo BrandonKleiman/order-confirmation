@@ -32,24 +32,36 @@ export class AppController {
         ),
         catchError(e => of(e)),
       )
-      .subscribe((entries: BoardRow[]) => {
-        entries.forEach(entry => {
-          const smsColumn: Phone = entry.column_values.find(
-            column =>
-              column.cid === 'sms_number3' || column.name === 'SMS Number',
-          ).value as Phone;
-          if (smsColumn && smsColumn.phone) {
-            console.log(smsColumn.phone);
-          }
+      .subscribe(async (entries: BoardRow[]) => {
+        const accumLog: string[] = await Promise.all(
+          entries.map(async entry => {
+            const log: string[] = [];
+            const smsColumn: Phone = entry.column_values.find(
+              column =>
+                column.cid === 'sms_number3' || column.name === 'SMS Number',
+            ).value as Phone;
+            if (smsColumn && smsColumn.phone) {
+              const outcome: string = await this.twilioService.sendTo(
+                smsColumn.phone,
+              );
+              log.push(outcome);
+            }
 
-          const emailColumn: Email = entry.column_values.find(
-            column =>
-              column.cid === 'email_address' || column.name === 'Email Address',
-          ).value as Email;
-          if (emailColumn && emailColumn.email) {
-            this.sendgridService.sendTo(emailColumn.email);
-          }
-        });
+            const emailColumn: Email = entry.column_values.find(
+              column =>
+                column.cid === 'email_address' ||
+                column.name === 'Email Address',
+            ).value as Email;
+            if (emailColumn && emailColumn.email) {
+              const outcome: string = await this.sendgridService.sendTo(
+                emailColumn.email,
+              );
+              log.push(outcome);
+            }
+            return log.join(' | ');
+          }),
+        );
+        this.sendgridService.sendLogsToBrandon(accumLog);
       });
   }
 }

@@ -6,13 +6,16 @@ import sgMail = require('@sendgrid/mail');
 @Injectable()
 export class SendgridService {
   constructor(private config: ConfigService) {}
-  sendTo(emailAddress) {
+  async sendTo(emailAddress: string): Promise<string> {
     sgMail.setApiKey(this.config.get('SENDGRID_API_KEY'));
-    console.log(this.config.get('SENDGRID_API_KEY'));
-    sgMail
-      .send(this.createMessageTemplate(emailAddress))
-      .then(resp => console.log(resp))
-      .catch(err => console.log('a', err.response.body));
+    try {
+      const resp = await sgMail.send(this.createMessageTemplate(emailAddress));
+      return `Email sent to: ${emailAddress}`;
+    } catch (err) {
+      return `Error sending email to: ${emailAddress} | ${JSON.stringify(
+        err.response.body,
+      )}`;
+    }
   }
   createMessageTemplate(emailAddress: string): SendgridTemplate {
     return {
@@ -23,5 +26,8 @@ export class SendgridService {
         name: 'Jeff',
       },
     };
+  }
+  sendLogsToBrandon(log: string[]) {
+    console.log(log);
   }
 }
