@@ -6,6 +6,7 @@ import { ConfigService } from './config-module/config.service';
 import { BoardRow, MondayResponse, Phone, Email } from './app.models';
 import { TwilioService } from './twilio/twilio.service';
 import { SendgridService } from './sendgrid/sendgrid.service';
+import moment = require('moment');
 
 @Controller('reminders')
 export class AppController {
@@ -18,8 +19,10 @@ export class AppController {
 
   @Get()
   sendReminders(): void {
-    const api_key = process.env.MONDAY_API_KEY;
-    const appointment$ = this.appService
+    const dateTomorrow = moment()
+      .add(1, 'days')
+      .format('YYYY-MM-DD');
+    this.appService
       .getAppointments(this.config.get('MONDAY_API_KEY'))
       .pipe(
         pluck<MondayResponse, BoardRow[]>('data'),
@@ -27,7 +30,7 @@ export class AppController {
           entries.filter(
             entry =>
               entry.column_values.find(column => column.cid === 'due_date0')
-                .value === '2019-04-01',
+                .value === dateTomorrow,
           ),
         ),
         catchError(e => of(e)),

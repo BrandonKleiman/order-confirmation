@@ -9,7 +9,7 @@ export class SendgridService {
   async sendTo(emailAddress: string): Promise<string> {
     sgMail.setApiKey(this.config.get('SENDGRID_API_KEY'));
     try {
-      const resp = await sgMail.send(this.createMessageTemplate(emailAddress));
+      await sgMail.send(this.createMessageTemplate(emailAddress));
       return `Email sent to: ${emailAddress}`;
     } catch (err) {
       return `Error sending email to: ${emailAddress} | ${JSON.stringify(
@@ -22,9 +22,7 @@ export class SendgridService {
       to: emailAddress,
       from: 'brandonkleiman@me.com',
       templateId: 'd-a5a53a07f32340fa9e08b6aef11f8a52',
-      dynamic_template_data: {
-        name: 'Jeff',
-      },
+      dynamic_template_data: {},
     };
   }
   sendLogsToBrandon(log: string[]) {
