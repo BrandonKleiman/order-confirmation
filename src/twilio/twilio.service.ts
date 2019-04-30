@@ -15,8 +15,8 @@ export class TwilioService {
     return client.messages
       .create({
         body: `Hello, This is a reminder of your installation appointment tomorrow with Thompson Marble and Granite. Please call 419-555-1234 if you have any questions. See you soon!`,
-        from: '+15672758105',
-        to: `+14195434300`,
+        from: `+15672758105`,
+        to: `+1${phoneNumber}`,
       })
       .then(() => {
         return `Sent sms to ${phoneNumber}`;
